@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import type { JobApplication, JobStatus, Reminder } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetTrigger } from '@/components/ui/sheet';
+import { SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { JOB_STATUSES } from '@/lib/types';
 import ApplicationSheet from '@/components/dashboard/application-sheet';
@@ -65,11 +65,6 @@ export default function DashboardPage() {
   }, [applications, statusFilter]);
 
   return (
-    <ApplicationSheet
-      isOpen={isSheetOpen}
-      setIsOpen={setIsSheetOpen}
-      application={selectedApplication}
-    >
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
             <Header applications={applications || []} />
@@ -90,14 +85,20 @@ export default function DashboardPage() {
                         ))}
                     </SelectContent>
                 </Select>
-                  <SheetTrigger asChild>
-                    <Button size="sm" className="h-8 gap-1" onClick={handleAddApplication}>
-                      <PlusCircle className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Application
-                      </span>
-                    </Button>
-                  </SheetTrigger>
+                  <ApplicationSheet
+                    isOpen={isSheetOpen}
+                    setIsOpen={setIsSheetOpen}
+                    application={selectedApplication}
+                    >
+                    <SheetTrigger asChild>
+                        <Button size="sm" className="h-8 gap-1" onClick={handleAddApplication}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Add Application
+                        </span>
+                        </Button>
+                    </SheetTrigger>
+                  </ApplicationSheet>
                 </div>
               </div>
               {loading ? (
@@ -114,6 +115,5 @@ export default function DashboardPage() {
           </main>
         </div>
       </div>
-    </ApplicationSheet>
   );
 }
