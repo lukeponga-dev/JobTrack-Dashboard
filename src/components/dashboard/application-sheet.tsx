@@ -1,14 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  updateDoc,
-} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -43,10 +35,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import { getFirestoreDb } from '@/lib/firebase';
 import { useAuth } from '@/contexts/auth-context';
 import type { JobApplication } from '@/lib/types';
-import { JOB_STATUSES, type JobStatus } from '@/lib/types';
+import { JOB_STATUSES } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -59,6 +50,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog';
+import {
+  addApplication,
+  deleteApplication,
+  updateApplication,
+} from '@/lib/actions';
 
 const formSchema = z.object({
   company: z.string().min(1, { message: 'Company is required.' }),
@@ -83,6 +79,7 @@ export default function ApplicationSheet({
 }: ApplicationSheetProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,7 +89,6 @@ export default function ApplicationSheet({
     handleSubmit,
     control,
     reset,
-    formState: { isSubmitting },
   } = form;
 
   useEffect(() => {
@@ -110,61 +106,55 @@ export default function ApplicationSheet({
         dateApplied: new Date(),
       });
     }
-  }, [application, reset]);
+  }, [application, reset, isOpen]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
-    
-    const db = getFirestoreDb();
-    if (!db) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Database not available.' });
-        return;
-    }
+    setIsSubmitting(true);
 
-    const data = {
+    const applicationData = {
       ...values,
       dateApplied: format(values.dateApplied, 'yyyy-MM-dd'),
-      lastUpdated: serverTimestamp(),
-      userId: user.uid,
     };
 
-    try {
-      if (application) {
-        await updateDoc(doc(db, 'jobApplications', application.id), data);
-        toast({ title: 'Success', description: 'Application updated.' });
-      } else {
-        await addDoc(collection(db, 'jobApplications'), data);
-        toast({ title: 'Success', description: 'Application added.' });
-      }
-      setIsOpen(false);
-    } catch (error: any) {
+    let result;
+    if (application) {
+      result = await updateApplication(application.id, applicationData, user.uid);
+    } else {
+      result = await addApplication(applicationData, user.uid);
+    }
+
+    setIsSubmitting(false);
+
+    if (result.error) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message,
+        description: result.error,
       });
+    } else {
+      toast({
+        title: 'Success',
+        description: application ? 'Application updated.' : 'Application added.',
+      });
+      setIsOpen(false);
     }
   };
 
   const handleDelete = async () => {
     if (!application) return;
-    
-    const db = getFirestoreDb();
-    if (!db) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Database not available.' });
-        return;
-    }
 
-    try {
-      await deleteDoc(doc(db, 'jobApplications', application.id));
-      toast({ title: 'Success', description: 'Application deleted.' });
-      setIsOpen(false);
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not delete application. Please try again.',
-      });
+    const result = await deleteApplication(application.id);
+
+    if (result.error) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error,
+        });
+    } else {
+        toast({ title: 'Success', description: 'Application deleted.' });
+        setIsOpen(false);
     }
   };
 
@@ -228,7 +218,7 @@ export default function ApplicationSheet({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a status" />
