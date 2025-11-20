@@ -25,7 +25,6 @@ const AnalyzeApplicationDataInputSchema = z.array(
         'Interviewing',
         'Offer',
         'Rejected',
-        'Withdrawn',
         'Viewed',
         'Not selected',
         'Expired',
@@ -88,10 +87,7 @@ Provide the following analysis:
 - Company Success Rates: Success rates broken down by company.
 - Optimal Application Timing: The optimal time to apply for jobs based on the data.
 - Personalized Recommendations: Personalized recommendations for improving the application strategy.
-
-Format the output as a JSON object matching the following schema:
-${JSON.stringify(AnalyzeApplicationDataOutputSchema.describe())}
-`, // Ensure schema description is included in the prompt.
+`,
 });
 
 // Define the Genkit flow for analyzing job application data.
