@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { useAuth } from '@/contexts/auth-context';
-import { db } from '@/lib/firebase';
+import { getFirestoreDb } from '@/lib/firebase';
 import type { JobApplication, JobStatus, Reminder } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
+    
+    const db = getFirestoreDb();
+    if (!db) {
+        setLoading(false);
+        return;
+    }
 
     setLoading(true);
 

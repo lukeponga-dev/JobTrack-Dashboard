@@ -2,7 +2,7 @@
 
 import { FileDown, FileUp, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth, getFirestoreDb } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
 import { format } from 'date-fns';
@@ -23,7 +23,6 @@ import { useAuth } from '@/contexts/auth-context';
 import type { JobApplication } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import React from 'react';
 
 type HeaderProps = {
@@ -37,6 +36,8 @@ export default function Header({ applications }: HeaderProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
+    const auth = getFirebaseAuth();
+    if (!auth) return;
     await signOut(auth);
     router.push('/login');
   };
@@ -64,7 +65,8 @@ export default function Header({ applications }: HeaderProps) {
   
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && user) {
+    const db = getFirestoreDb();
+    if (file && user && db) {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,

@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { auth, googleProvider } from '@/lib/firebase';
+import { getFirebaseAuth, getGoogleProvider } from '@/lib/firebase';
 import { Icons, Logo } from '@/components/icons';
 
 const formSchema = z.object({
@@ -52,6 +52,12 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      toast({ variant: 'destructive', title: 'Login Failed', description: 'Firebase not initialized.' });
+      setLoading(false);
+      return;
+    }
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
@@ -68,6 +74,15 @@ export default function LoginPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
+    const auth = getFirebaseAuth();
+    const googleProvider = getGoogleProvider();
+
+    if (!auth || !googleProvider) {
+      toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: 'Firebase not initialized.' });
+      setGoogleLoading(false);
+      return;
+    }
+
     try {
       await signInWithPopup(auth, googleProvider);
       router.push('/dashboard');

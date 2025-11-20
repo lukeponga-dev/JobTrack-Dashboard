@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getFirestoreDb } from '@/lib/firebase';
 import { useAuth } from '@/contexts/auth-context';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -69,6 +69,12 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
     const selectedJob = applications.find(app => app.id === values.jobId);
     if (!selectedJob) return;
 
+    const db = getFirestoreDb();
+    if (!db) {
+      toast({ variant: 'destructive', title: 'Failed to set reminder.' });
+      return;
+    }
+
     try {
       await addDoc(collection(db, 'reminders'), {
         userId: user.uid,
@@ -87,6 +93,11 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
   }
 
   async function deleteReminder(id: string) {
+    const db = getFirestoreDb();
+    if (!db) {
+      toast({ variant: 'destructive', title: 'Failed to delete reminder.' });
+      return;
+    }
     try {
       await deleteDoc(doc(db, 'reminders', id));
       toast({ title: 'Reminder deleted.' });

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
-import { getAuth, connectAuthEmulator, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator, GoogleAuthProvider, type Auth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,15 +11,23 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+
+
 function initializeClientApp() {
     if (typeof window === 'undefined' || !firebaseConfig.apiKey) {
-        return { app: null, auth: null, db: null, googleProvider: null };
+        return;
     }
 
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const googleProvider = new GoogleAuthProvider();
+    if (app) return; // Already initialized
+
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
 
     if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true' && process.env.NODE_ENV === 'development') {
         try {
@@ -38,12 +46,31 @@ function initializeClientApp() {
             console.error("Error connecting to Firestore emulator", error);
         }
     }
-
-    return { app, auth, db, googleProvider };
 }
 
-// Exporting instances this way can be problematic in Next.js.
-// It's better to get them from the function when needed.
-const { app, auth, db, googleProvider } = initializeClientApp();
+// Initialize on client-side
+initializeClientApp();
 
+// Getter functions to be used in components
+export function getFirebaseApp() {
+    if (!app) initializeClientApp();
+    return app;
+}
+
+export function getFirebaseAuth() {
+    if (!auth) initializeClientApp();
+    return auth;
+}
+
+export function getFirestoreDb() {
+    if (!db) initializeClientApp();
+    return db;
+}
+
+export function getGoogleProvider() {
+    if (!googleProvider) initializeClientApp();
+    return googleProvider;
+}
+
+// Exporting for backwards compatibility if some files still use them directly
 export { app, auth, db, googleProvider };

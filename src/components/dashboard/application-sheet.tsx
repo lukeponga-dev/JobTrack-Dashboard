@@ -43,7 +43,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import { db } from '@/lib/firebase';
+import { getFirestoreDb } from '@/lib/firebase';
 import { useAuth } from '@/contexts/auth-context';
 import type { JobApplication } from '@/lib/types';
 import { JOB_STATUSES, type JobStatus } from '@/lib/types';
@@ -114,6 +114,12 @@ export default function ApplicationSheet({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) return;
+    
+    const db = getFirestoreDb();
+    if (!db) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Database not available.' });
+        return;
+    }
 
     const data = {
       ...values,
@@ -142,6 +148,12 @@ export default function ApplicationSheet({
 
   const handleDelete = async () => {
     if (!application) return;
+    
+    const db = getFirestoreDb();
+    if (!db) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Database not available.' });
+        return;
+    }
 
     try {
       await deleteDoc(doc(db, 'jobApplications', application.id));
