@@ -1,11 +1,11 @@
 'use client';
 
-import { FileDown, FileUp, LogOut } from 'lucide-react';
+import { FileDown, FileUp, LogOut, Database } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
 import { format } from 'date-fns';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { collection, writeBatch, serverTimestamp } from 'firebase/firestore';
 import React from 'react';
 
 import {
@@ -23,6 +23,7 @@ import { Logo } from '@/components/icons';
 import { useAuth, useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import type { JobApplication } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { seedApplications } from '@/lib/seed-data';
 
 
 type HeaderProps = {
@@ -99,6 +100,47 @@ export default function Header({ applications }: HeaderProps) {
     }
   };
 
+  const handleSeedData = async () => {
+    if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Seeding Failed',
+        description: 'You must be logged in to seed data.',
+      });
+      return;
+    }
+
+    try {
+      const jobAppsCollection = collection(firestore, 'users', user.uid, 'jobApplications');
+      const batch = writeBatch(firestore);
+
+      seedApplications.forEach((app) => {
+        const docRef = collection(firestore, 'users', user.uid, 'jobApplications').doc();
+        const fullData = {
+          ...app,
+          id: docRef.id,
+          userId: user.uid,
+          lastUpdated: serverTimestamp(),
+        };
+        batch.set(docRef, fullData);
+      });
+
+      await batch.commit();
+
+      toast({
+        title: 'Seeding Successful',
+        description: `${seedApplications.length} applications have been added to your account.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Seeding Failed',
+        description: error.message || 'An unexpected error occurred while seeding data.',
+      });
+    }
+  };
+
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <div className="flex items-center gap-2 text-lg font-semibold">
@@ -113,6 +155,10 @@ export default function Header({ applications }: HeaderProps) {
                 onChange={handleImport}
                 className="hidden"
             />
+             <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handleSeedData}>
+              <Database className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Seed Data</span>
+            </Button>
             <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => fileInputRef.current?.click()}>
               <FileUp className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Import</span>
