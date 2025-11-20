@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Job Pilot - Job Application Tracker',
@@ -26,14 +27,16 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <Providers
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </Providers>
+        <FirebaseClientProvider>
+          <Providers
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </Providers>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

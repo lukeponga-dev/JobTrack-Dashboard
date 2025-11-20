@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import { getFirestoreDb } from '@/lib/firebase';
-import { useAuth } from '@/contexts/auth-context';
+import { collection, doc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +41,7 @@ import type { Reminder, JobApplication } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
+import { useUser, useFirestore, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
@@ -56,7 +55,8 @@ type RemindersProps = {
 };
 
 export default function Reminders({ reminders, applications }: RemindersProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -69,14 +69,9 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
     const selectedJob = applications.find(app => app.id === values.jobId);
     if (!selectedJob) return;
 
-    const db = getFirestoreDb();
-    if (!db) {
-      toast({ variant: 'destructive', title: 'Failed to set reminder.' });
-      return;
-    }
-
     try {
-      await addDoc(collection(db, 'reminders'), {
+      const reminderCollection = collection(firestore, 'users', user.uid, 'reminders');
+      addDocumentNonBlocking(reminderCollection, {
         userId: user.uid,
         title: values.title,
         date: format(values.date, 'yyyy-MM-dd'),
@@ -93,13 +88,10 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
   }
 
   async function deleteReminder(id: string) {
-    const db = getFirestoreDb();
-    if (!db) {
-      toast({ variant: 'destructive', title: 'Failed to delete reminder.' });
-      return;
-    }
+    if(!user) return;
     try {
-      await deleteDoc(doc(db, 'reminders', id));
+      const reminderDoc = doc(firestore, 'users', user.uid, 'reminders', id);
+      deleteDocumentNonBlocking(reminderDoc);
       toast({ title: 'Reminder deleted.' });
     } catch (e) {
       toast({ variant: 'destructive', title: 'Failed to delete reminder.' });

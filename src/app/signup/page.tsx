@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,7 +28,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { getFirebaseAuth, getGoogleProvider } from '@/lib/firebase';
+import { useAuth } from '@/firebase';
+import { initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { Icons, Logo } from '@/components/icons';
 
 
@@ -46,6 +47,7 @@ const formSchema = z
 export default function SignUpPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -61,36 +63,22 @@ export default function SignUpPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      toast({ variant: 'destructive', title: 'Sign Up Failed', description: 'Firebase not initialized.' });
-      setLoading(false);
-      return;
-    }
-    try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/dashboard');
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: error.message || 'An unexpected error occurred.',
-      });
-    } finally {
-      setLoading(false);
-    }
+    initiateEmailSignUp(auth, values.email, values.password);
+    // Non-blocking, redirect is handled by AuthGuard/observer
+    toast({
+      title: 'Creating account...',
+      description: 'You will be redirected shortly.',
+    });
+    setTimeout(() => {
+        setLoading(false);
+        router.push('/dashboard');
+    }, 1500);
   }
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
-    const auth = getFirebaseAuth();
-    const googleProvider = getGoogleProvider();
+    const googleProvider = new GoogleAuthProvider();
 
-    if (!auth || !googleProvider) {
-      toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: 'Firebase not initialized.' });
-      setGoogleLoading(false);
-      return;
-    }
     try {
       await signInWithPopup(auth, googleProvider);
       router.push('/dashboard');

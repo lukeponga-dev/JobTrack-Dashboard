@@ -1,20 +1,20 @@
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
+import { useUser } from '@/firebase';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from './ui/skeleton';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isUserLoading && !user) {
       redirect('/login');
     }
-  }, [user, loading]);
+  }, [user, isUserLoading]);
 
-  if (loading || !user) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background p-4">
         <div className="w-full max-w-2xl space-y-6">

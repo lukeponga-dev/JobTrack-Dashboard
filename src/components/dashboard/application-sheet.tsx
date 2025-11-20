@@ -35,7 +35,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/auth-context';
+import { useUser } from '@/firebase';
 import type { JobApplication } from '@/lib/types';
 import { JOB_STATUSES } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -77,7 +77,7 @@ export default function ApplicationSheet({
   application,
   children,
 }: ApplicationSheetProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -142,9 +142,9 @@ export default function ApplicationSheet({
   };
 
   const handleDelete = async () => {
-    if (!application) return;
+    if (!application || !user) return;
 
-    const result = await deleteApplication(application.id);
+    const result = await deleteApplication(application.id, user.uid);
 
     if (result.error) {
         toast({

@@ -2,16 +2,13 @@
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import type { ThemeProviderProps } from 'next-themes/dist/types';
-import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 
 export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemesProvider {...props}>
-      <AuthProvider>
-        {children}
-        <Toaster />
-      </AuthProvider>
+      {children}
+      <Toaster />
     </NextThemesProvider>
   );
 }

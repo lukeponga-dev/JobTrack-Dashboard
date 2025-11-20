@@ -2,10 +2,11 @@
 
 import { FileDown, FileUp, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
-import { getFirebaseAuth, getFirestoreDb } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
 import { format } from 'date-fns';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import React from 'react';
 
 import {
   DropdownMenu,
@@ -19,25 +20,24 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Logo } from '@/components/icons';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth, useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import type { JobApplication } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import React from 'react';
+
 
 type HeaderProps = {
     applications: JobApplication[];
 }
 
 export default function Header({ applications }: HeaderProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
-    const auth = getFirebaseAuth();
-    if (!auth) return;
     await signOut(auth);
     router.push('/login');
   };
@@ -65,21 +65,23 @@ export default function Header({ applications }: HeaderProps) {
   
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    const db = getFirestoreDb();
-    if (file && user && db) {
+    if (file && user) {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
         complete: async (results) => {
           try {
             const importedApps = results.data as any[];
+            const jobAppsCollection = collection(firestore, 'users', user.uid, 'jobApplications');
+
             for (const app of importedApps) {
-              await addDoc(collection(db, 'jobApplications'), {
+              const appData = {
                 ...app,
                 dateApplied: app.dateApplied || format(new Date(), 'yyyy-MM-dd'),
                 lastUpdated: serverTimestamp(),
                 userId: user.uid,
-              });
+              };
+              addDocumentNonBlocking(jobAppsCollection, appData)
             }
             toast({
               title: 'Import Successful',

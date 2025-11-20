@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,7 +28,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { getFirebaseAuth, getGoogleProvider } from '@/lib/firebase';
+import { useAuth } from '@/firebase';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import { Icons, Logo } from '@/components/icons';
 
 const formSchema = z.object({
@@ -39,6 +40,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -52,37 +54,23 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      toast({ variant: 'destructive', title: 'Login Failed', description: 'Firebase not initialized.' });
-      setLoading(false);
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/dashboard');
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
-      });
-    } finally {
-      setLoading(false);
-    }
+    initiateEmailSignIn(auth, values.email, values.password);
+    // Non-blocking, redirect is handled by AuthGuard/observer
+    // For simplicity in this flow, we'll just show a toast and let the observer redirect.
+    toast({
+      title: 'Signing in...',
+      description: 'You will be redirected shortly.',
+    });
+    // A real app might wait for a result or error here if not using a global observer for redirects
+    setTimeout(() => {
+        setLoading(false);
+        router.push('/dashboard');
+    }, 1500)
   }
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
-    const auth = getFirebaseAuth();
-    const googleProvider = getGoogleProvider();
-
-    if (!auth || !googleProvider) {
-      toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: 'Firebase not initialized.' });
-      setGoogleLoading(false);
-      return;
-    }
-
+    const googleProvider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, googleProvider);
       router.push('/dashboard');

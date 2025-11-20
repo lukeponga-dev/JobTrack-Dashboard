@@ -1,16 +1,13 @@
 'use server';
 
 import {
-  addDoc,
   collection,
-  deleteDoc,
   doc,
   serverTimestamp,
-  updateDoc,
 } from 'firebase/firestore';
 import { analyzeApplicationData } from '@/ai/flows/analyze-application-data';
 import type { JobApplication } from '@/lib/types';
-import { getFirestoreDb } from './firebase';
+import { getSdks, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 
 export async function getAiInsights(applications: JobApplication[]) {
   if (!applications || applications.length === 0) {
@@ -42,8 +39,8 @@ export async function addApplication(
   applicationData: Omit<JobApplication, 'id' | 'userId' | 'lastUpdated'>,
   userId: string
 ) {
-  const db = getFirestoreDb();
-  if (!db) {
+  const { firestore } = getSdks();
+  if (!firestore) {
     return { error: 'Database not available.' };
   }
   try {
@@ -52,7 +49,8 @@ export async function addApplication(
       lastUpdated: serverTimestamp(),
       userId: userId,
     };
-    await addDoc(collection(db, 'jobApplications'), data);
+    const jobAppsCollection = collection(firestore, 'users', userId, 'jobApplications');
+    addDocumentNonBlocking(jobAppsCollection, data);
     return { success: true };
   } catch (error: any) {
     return { error: error.message };
@@ -64,32 +62,33 @@ export async function updateApplication(
   applicationData: Omit<JobApplication, 'id' | 'userId' | 'lastUpdated'>,
   userId: string
 ) {
-  const db = getFirestoreDb();
-  if (!db) {
+  const { firestore } = getSdks();
+  if (!firestore) {
     return { error: 'Database not available.' };
   }
   try {
     const data = {
       ...applicationData,
       lastUpdated: serverTimestamp(),
-      userId: userId,
     };
-    await updateDoc(doc(db, 'jobApplications', applicationId), data);
+    const appDocRef = doc(firestore, 'users', userId, 'jobApplications', applicationId);
+    updateDocumentNonBlocking(appDocRef, data);
     return { success: true };
   } catch (error: any) {
     return { error: error.message };
   }
 }
 
-export async function deleteApplication(applicationId: string) {
-  const db = getFirestoreDb();
-  if (!db) {
-    return { error: 'Database not available.' };
+export async function deleteApplication(applicationId: string, userId: string) {
+    const { firestore } = getSdks();
+    if (!firestore) {
+      return { error: 'Database not available.' };
+    }
+    try {
+      const appDocRef = doc(firestore, 'users', userId, 'jobApplications', applicationId);
+      deleteDocumentNonBlocking(appDocRef);
+      return { success: true };
+    } catch (error: any) {
+      return { error: 'Could not delete application. Please try again.' };
+    }
   }
-  try {
-    await deleteDoc(doc(db, 'jobApplications', applicationId));
-    return { success: true };
-  } catch (error: any) {
-    return { error: 'Could not delete application. Please try again.' };
-  }
-}
