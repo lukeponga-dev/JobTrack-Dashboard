@@ -4,10 +4,14 @@ import {
   collection,
   doc,
   serverTimestamp,
+  addDoc,
+  updateDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { analyzeApplicationData } from '@/ai/flows/analyze-application-data';
 import type { JobApplication } from '@/lib/types';
-import { getSdks, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { getFirebaseAdmin } from '@/firebase/server-init';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 
 export async function getAiInsights(applications: JobApplication[]) {
   if (!applications || applications.length === 0) {
@@ -39,7 +43,7 @@ export async function addApplication(
   applicationData: Omit<JobApplication, 'id' | 'userId' | 'lastUpdated'>,
   userId: string
 ) {
-  const { firestore } = getSdks();
+  const { firestore } = getFirebaseAdmin();
   if (!firestore) {
     return { error: 'Database not available.' };
   }
@@ -62,7 +66,7 @@ export async function updateApplication(
   applicationData: Omit<JobApplication, 'id' | 'userId' | 'lastUpdated'>,
   userId: string
 ) {
-  const { firestore } = getSdks();
+  const { firestore } = getFirebaseAdmin();
   if (!firestore) {
     return { error: 'Database not available.' };
   }
@@ -80,7 +84,7 @@ export async function updateApplication(
 }
 
 export async function deleteApplication(applicationId: string, userId: string) {
-    const { firestore } = getSdks();
+    const { firestore } = getFirebaseAdmin();
     if (!firestore) {
       return { error: 'Database not available.' };
     }
