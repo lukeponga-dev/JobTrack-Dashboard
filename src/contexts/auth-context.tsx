@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, type Auth } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 

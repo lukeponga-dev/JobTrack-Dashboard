@@ -18,10 +18,18 @@ let googleProvider: GoogleAuthProvider;
 
 function initializeFirebase() {
   if (getApps().length === 0) {
-    app = initializeApp(firebaseConfig);
+    // Check for API key to prevent initialization error
+    if (firebaseConfig.apiKey) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      console.error('Firebase API key is not set. Firebase will not be initialized.');
+      return;
+    }
   } else {
     app = getApp();
   }
+
+  // Only initialize these on the client
   auth = getAuth(app);
   db = getFirestore(app);
   googleProvider = new GoogleAuthProvider();
@@ -29,26 +37,26 @@ function initializeFirebase() {
   if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true' && process.env.NODE_ENV === 'development') {
     try {
       // @ts-ignore - emulatorConfig is not on the public type
-      if (!auth.emulatorConfig) {
+      if (auth.emulatorConfig === null) {
         connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
       }
     } catch (error) {
       console.error("Error connecting to Auth emulator", error);
     }
     try {
-      // @ts-ignore - _isInitialized is not on the public type
-      if (!db._isInitialized) {
-        connectFirestoreEmulator(db, '127.0.0.1', 8080);
-      }
+        // @ts-ignore - _isInitialized is not on the public type
+        if (!db._isInitialized) {
+            connectFirestoreEmulator(db, '127.0.0.1', 8080);
+        }
     } catch(error) {
-      console.error("Error connecting to Firestore emulator", error);
+        console.error("Error connecting to Firestore emulator", error);
     }
   }
 }
 
-// Initialize on first import
+// We only want to initialize firebase on the client
 if (typeof window !== 'undefined') {
-  initializeFirebase();
+    initializeFirebase();
 }
 
 export const getFirebaseApp = () => {
