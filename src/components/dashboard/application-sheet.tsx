@@ -119,9 +119,9 @@ export default function ApplicationSheet({
 
     let result;
     if (application) {
-      result = await updateApplication(application.id, applicationData, user.uid);
+      result = await updateApplication(application.id, applicationData);
     } else {
-      result = await addApplication(applicationData, user.uid);
+      result = await addApplication(applicationData);
     }
 
     setIsSubmitting(false);
@@ -144,7 +144,7 @@ export default function ApplicationSheet({
   const handleDelete = async () => {
     if (!application || !user) return;
 
-    const result = await deleteApplication(application.id, user.uid);
+    const result = await deleteApplication(application.id);
 
     if (result.error) {
         toast({
@@ -222,7 +222,7 @@ export default function ApplicationSheet({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a status" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {JOB_STATUSES.map((status) => (
