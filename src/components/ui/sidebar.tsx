@@ -8,7 +8,7 @@ import { PanelLeft } from 'lucide-react';
 import { useMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import {
   Tooltip,
   TooltipContent,
@@ -113,6 +113,7 @@ const Sidebar = React.forwardRef<
             style={{ '--sidebar-width-mobile': SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
             {...props}
           >
+             <SheetTitle className="sr-only">Main Menu</SheetTitle>
              <div ref={ref} className="flex h-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
