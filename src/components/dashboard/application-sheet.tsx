@@ -30,7 +30,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import type { JobApplication } from '@/lib/types';
+import type { JobApplication, PartialJobApplication } from '@/lib/types';
 import { JOB_STATUSES } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
@@ -64,11 +64,13 @@ const formSchema = z.object({
 
 type ApplicationFormProps = {
   application: JobApplication | null;
+  prefilledData?: PartialJobApplication | null;
   onSave: () => void;
 };
 
 export default function ApplicationForm({
   application,
+  prefilledData,
   onSave,
 }: ApplicationFormProps) {
   const { toast } = useToast();
@@ -104,7 +106,18 @@ export default function ApplicationForm({
         location: application.location || '',
         notes: application.notes || '',
       });
-    } else {
+    } else if (prefilledData) {
+        reset({
+            company: prefilledData.company || '',
+            role: prefilledData.role || '',
+            url: prefilledData.url || '',
+            status: prefilledData.status as any || 'Applied',
+            dateApplied: new Date(),
+            location: prefilledData.location || '',
+            notes: prefilledData.notes || '',
+        });
+    }
+     else {
       reset({
         company: '',
         role: '',
@@ -115,7 +128,7 @@ export default function ApplicationForm({
         notes: '',
       });
     }
-  }, [application, reset]);
+  }, [application, prefilledData, reset]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {

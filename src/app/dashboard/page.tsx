@@ -28,9 +28,11 @@ import StatusChart from '@/components/dashboard/status-chart';
 import Reminders from '@/components/dashboard/reminders';
 import AiInsights from '@/components/dashboard/ai-insights';
 import Header from '@/components/dashboard/header';
-import { PlusCircle, Trash } from 'lucide-react';
+import { PlusCircle, Trash, Mail } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Reminder } from '@/lib/types';
+import AutoFromEmail from '@/components/dashboard/auto-from-email';
+import type { PartialJobApplication } from '@/lib/types';
 
 
 export default function DashboardPage() {
@@ -39,7 +41,9 @@ export default function DashboardPage() {
   const { toast } = useToast();
   
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAutoEmailOpen, setIsAutoEmailOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
+  const [prefilledData, setPrefilledData] = useState<PartialJobApplication | null>(null);
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -66,17 +70,27 @@ export default function DashboardPage() {
 
   const handleAddApplication = () => {
     setSelectedApplication(null);
+    setPrefilledData(null);
     setIsSheetOpen(true);
   };
 
   const handleEditApplication = (app: JobApplication) => {
     setSelectedApplication(app);
+    setPrefilledData(null);
+    setIsSheetOpen(true);
+  };
+
+  const handleCreateFromEmail = (data: PartialJobApplication) => {
+    setPrefilledData(data);
+    setSelectedApplication(null);
+    setIsAutoEmailOpen(false);
     setIsSheetOpen(true);
   };
   
   const handleSheetClose = () => {
     setIsSheetOpen(false);
     setSelectedApplication(null);
+    setPrefilledData(null);
   }
 
   const filteredApplications = useMemo(() => {
@@ -145,6 +159,7 @@ export default function DashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <AutoFromEmail open={isAutoEmailOpen} onOpenChange={setIsAutoEmailOpen} onSave={handleCreateFromEmail} />
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                   <Button size="sm" className="h-8 gap-1" onClick={handleAddApplication}>
@@ -163,7 +178,11 @@ export default function DashboardPage() {
                       {selectedApplication ? 'Update the details of your job application.' : 'Track a new job application.'}
                     </SheetDescription>
                   </SheetHeader>
-                  <ApplicationForm application={selectedApplication} onSave={handleSheetClose} />
+                  <ApplicationForm 
+                    application={selectedApplication} 
+                    prefilledData={prefilledData}
+                    onSave={handleSheetClose} 
+                  />
                 </SheetContent>
               </Sheet>
             </div>

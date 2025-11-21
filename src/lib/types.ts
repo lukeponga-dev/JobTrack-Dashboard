@@ -28,6 +28,9 @@ export type JobApplication = {
   notes?: string;
 };
 
+export type PartialJobApplication = Partial<Omit<JobApplication, 'id' | 'userId' | 'lastUpdated' | 'dateApplied'>>;
+
+
 export type Reminder = {
   id: string;
   userId: string;
