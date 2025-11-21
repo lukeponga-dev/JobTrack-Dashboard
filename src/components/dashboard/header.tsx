@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileDown, FileUp, LogOut, PanelLeft, MoreHorizontal, FilePlus2 } from 'lucide-react';
+import { FileDown, FileUp, LogOut, PanelLeft } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
@@ -141,7 +141,7 @@ export default function Header({ applications }: HeaderProps) {
         </Sheet>
 
         {/* Desktop Nav */}
-        <Link href="/dashboard" className="hidden sm:flex items-center gap-2 text-lg font-semibold">
+        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
           <Logo className="h-6 w-6 text-primary" />
           <span className="font-headline">JobTrack</span>
         </Link>
