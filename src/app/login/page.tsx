@@ -88,7 +88,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-8 left-8 flex items-center gap-2 text-lg font-semibold">
         <Logo className="h-6 w-6" />
-        <span className="font-headline">Job Pilot</span>
+        <span className="font-headline">JobTrack</span>
       </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1 text-center">
@@ -116,7 +116,12 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <div className="flex items-center justify-between">
+                        <FormLabel>Password</FormLabel>
+                        <Link href="/forgot-password" passHref legacyBehavior>
+                            <a className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+                        </Link>
+                    </div>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>

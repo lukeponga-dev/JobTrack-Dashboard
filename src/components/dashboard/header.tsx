@@ -7,6 +7,7 @@ import Papa from 'papaparse';
 import { format } from 'date-fns';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import React from 'react';
+import Link from 'next/link';
 
 import {
   DropdownMenu,
@@ -102,10 +103,10 @@ export default function Header({ applications }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-        <div className="flex items-center gap-2 text-lg font-semibold">
+        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
           <Logo className="h-6 w-6 text-primary" />
-          <span className="font-headline">Job Pilot</span>
-        </div>
+          <span className="font-headline">JobTrack</span>
+        </Link>
         <div className="ml-auto flex items-center gap-2">
             <input
                 type="file"
