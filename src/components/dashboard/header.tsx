@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import React from 'react';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 import {
   DropdownMenu,
@@ -69,39 +70,76 @@ export default function Header({ applications }: HeaderProps) {
     document.body.removeChild(link);
   };
   
+  const processAndImportData = async (data: any[]) => {
+    if (!user || !firestore) return;
+    try {
+        const jobAppsCollection = collection(firestore, 'users', user.uid, 'jobApplications');
+
+        for (const app of data) {
+          const appData = {
+            ...app,
+            dateApplied: app.dateApplied || format(new Date(), 'yyyy-MM-dd'),
+            lastUpdated: serverTimestamp(),
+            userId: user.uid,
+          };
+          addDocumentNonBlocking(jobAppsCollection, appData)
+        }
+        toast({
+          title: 'Import Successful',
+          description: `${data.length} applications imported.`,
+        });
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Import Failed',
+          description: 'Please check the file format and try again.',
+        });
+      }
+  }
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && user) {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async (results) => {
-          try {
-            const importedApps = results.data as any[];
-            const jobAppsCollection = collection(firestore, 'users', user.uid, 'jobApplications');
+    if (!file || !user) return;
 
-            for (const app of importedApps) {
-              const appData = {
-                ...app,
-                dateApplied: app.dateApplied || format(new Date(), 'yyyy-MM-dd'),
-                lastUpdated: serverTimestamp(),
-                userId: user.uid,
-              };
-              addDocumentNonBlocking(jobAppsCollection, appData)
+    const reader = new FileReader();
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+    reader.onload = (e) => {
+        const content = e.target?.result;
+        if(!content) return;
+
+        if (fileExtension === 'csv') {
+            Papa.parse(content as string, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => processAndImportData(results.data),
+            });
+        } else if (fileExtension === 'json') {
+            try {
+                const data = JSON.parse(content as string);
+                processAndImportData(Array.isArray(data) ? data : [data]);
+            } catch (error) {
+                toast({ variant: 'destructive', title: 'Import Failed', description: 'Invalid JSON file.' });
             }
-            toast({
-              title: 'Import Successful',
-              description: `${importedApps.length} applications imported.`,
-            });
-          } catch (error) {
-            toast({
-              variant: 'destructive',
-              title: 'Import Failed',
-              description: 'Please check the CSV file format and try again.',
-            });
-          }
-        },
-      });
+        } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+            try {
+                const workbook = XLSX.read(content, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const data = XLSX.utils.sheet_to_json(sheet);
+                processAndImportData(data);
+            } catch (error) {
+                toast({ variant: 'destructive', title: 'Import Failed', description: 'Could not parse Excel file.' });
+            }
+        } else {
+            toast({ variant: 'destructive', title: 'Unsupported File Type', description: 'Please upload a CSV, JSON, or Excel file.' });
+        }
+    };
+    
+    if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+        reader.readAsBinaryString(file);
+    } else {
+        reader.readAsText(file);
     }
   };
 
@@ -165,7 +203,7 @@ export default function Header({ applications }: HeaderProps) {
         <div className="ml-auto flex items-center gap-2">
             <input
                 type="file"
-                accept=".csv"
+                accept=".csv, .json, .xls, .xlsx"
                 ref={fileInputRef}
                 onChange={handleImport}
                 className="hidden"
