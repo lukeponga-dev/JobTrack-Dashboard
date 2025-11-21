@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter as FontSans } from 'next/font/google';
+import Script from 'next/script';
 
 import './globals.css';
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -24,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#000000" />
+      </head>
       <body className={cn('font-sans antialiased', fontSans.variable)}>
         <FirebaseClientProvider>
           <Providers
@@ -35,6 +40,19 @@ export default function RootLayout({
             {children}
           </Providers>
         </FirebaseClientProvider>
+        <Script id="service-worker-registration">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                  console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                  console.log('SW registration failed: ', registrationError);
+                });
+              });
+            }
+          `}
+        </Script>
       </body>
     </html>
   );
