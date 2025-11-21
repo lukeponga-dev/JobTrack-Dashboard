@@ -107,7 +107,7 @@ export default function SignUpPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
        <div className="absolute top-8 left-8 flex items-center gap-2 text-lg font-semibold">
         <Logo className="h-6 w-6" />
-        <span className="font-headline">Job Pilot</span>
+        <span className="font-headline">JobTrack</span>
       </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1 text-center">

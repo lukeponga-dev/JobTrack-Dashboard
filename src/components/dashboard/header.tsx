@@ -119,11 +119,9 @@ export default function Header({ applications }: HeaderProps) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
-                <SheetHeader>
-                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Main navigation links for the JobTrack dashboard, including import and export actions.
-                  </SheetDescription>
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Mobile Menu</SheetTitle>
+                    <SheetDescription>Main navigation and actions for the dashboard.</SheetDescription>
                 </SheetHeader>
                 <nav className="grid gap-6 text-lg font-medium mt-8">
                     <Link
@@ -147,10 +145,10 @@ export default function Header({ applications }: HeaderProps) {
         </Sheet>
 
         {/* Desktop Nav */}
-        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
+        <div className="flex items-center gap-2 text-lg font-semibold">
           <Logo className="h-6 w-6 text-primary" />
           <span className="font-headline">JobTrack</span>
-        </Link>
+        </div>
         
         <div className="ml-auto flex items-center gap-2">
             <input
@@ -160,11 +158,11 @@ export default function Header({ applications }: HeaderProps) {
                 onChange={handleImport}
                 className="hidden"
             />
-            <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => fileInputRef.current?.click()}>
+            <Button size="icon" variant="outline" className="h-8 w-8 hidden sm:inline-flex" onClick={() => fileInputRef.current?.click()}>
               <FileUp className="h-4 w-4" />
               <span className="sr-only">Import</span>
             </Button>
-            <Button size="icon" variant="outline" className="h-8 w-8" onClick={handleExport}>
+            <Button size="icon" variant="outline" className="h-8 w-8 hidden sm:inline-flex" onClick={handleExport}>
               <FileDown className="h-4 w-4" />
               <span className="sr-only">Export</span>
             </Button>

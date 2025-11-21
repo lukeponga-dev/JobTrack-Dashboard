@@ -122,30 +122,30 @@ const MobileView = ({ applications, onEdit }: ApplicationsTableProps) => (
         const lastUpdatedDate = toDate(app.lastUpdated);
         return (
           <Card key={app.id} onClick={() => onEdit(app)} className="cursor-pointer">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex-1">
-                <p className="font-semibold text-foreground truncate">{app.company}</p>
+            <CardContent className="p-4 flex items-start gap-4">
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                    <p className="font-semibold text-foreground truncate">{app.company}</p>
+                    <Badge className={`border-none text-xs ${statusColors[app.status]}`} variant="outline">
+                        {app.status}
+                    </Badge>
+                </div>
                 <p className="text-sm text-muted-foreground truncate">{app.role}</p>
-                 <p className="text-xs text-muted-foreground pt-2">
-                    {lastUpdatedDate ? formatDistanceToNow(lastUpdatedDate, { addSuffix: true }) : 'N/A'}
+                 <p className="text-xs text-muted-foreground pt-1">
+                    {lastUpdatedDate ? `Updated ${formatDistanceToNow(lastUpdatedDate, { addSuffix: true })}` : 'N/A'}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className={`border-none ${statusColors[app.status]}`} variant="outline">
-                    {app.status}
-                </Badge>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onSelect={() => onEdit(app)}>Edit</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onSelect={() => onEdit(app)}>Edit</DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
             </CardContent>
           </Card>
         );

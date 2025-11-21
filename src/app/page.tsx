@@ -11,7 +11,7 @@ export default function HomePage() {
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <Briefcase className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">Job Pilot</span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">JobTrack</span>
                     </div>
                     <nav className="flex items-center space-x-4">
                         <Link
@@ -38,7 +38,7 @@ export default function HomePage() {
                     <span className="text-blue-600 dark:text-blue-400">Land Your Dream Job</span>
                 </h1>
                 <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                    Stay organized and never miss an opportunity. Job Pilot helps you manage applications,
+                    Stay organized and never miss an opportunity. JobTrack helps you manage applications,
                     track interviews, and analyze your job search progress—all in one place.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -142,7 +142,7 @@ export default function HomePage() {
                     Ready to Take Control of Your Job Search?
                 </h2>
                 <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                    Join Job Pilot today and start tracking your applications like a pro.
+                    Join JobTrack today and start tracking your applications like a pro.
                 </p>
                 <Link
                     href="/signup"
@@ -158,7 +158,7 @@ export default function HomePage() {
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <div className="flex items-center space-x-2 mb-4 md:mb-0">
                             <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">Job Pilot</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">JobTrack</span>
                         </div>
                         <nav className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
                             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -170,7 +170,7 @@ export default function HomePage() {
                         </nav>
                     </div>
                     <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-                        © {new Date().getFullYear()} Job Pilot. Made with ❤️ in New Zealand.
+                        © {new Date().getFullYear()} JobTrack. Made with ❤️ in New Zealand.
                     </div>
                 </div>
             </footer>
