@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileDown, FileUp, LogOut } from 'lucide-react';
+import { FileDown, FileUp, LogOut, Database } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
@@ -25,6 +25,7 @@ import { useAuth, useUser, useFirestore, addDocumentNonBlocking } from '@/fireba
 import type { JobApplication } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarTrigger } from '../ui/sidebar';
+import { seedApplications } from '@/lib/seed-data';
 
 
 type HeaderProps = {
@@ -42,6 +43,40 @@ export default function Header({ applications }: HeaderProps) {
   const handleLogout = async () => {
     await signOut(auth);
     router.push('/login');
+  };
+
+  const handleSeedData = async () => {
+    if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: 'You must be logged in to seed data.',
+      });
+      return;
+    }
+
+    try {
+        const jobAppsCollection = collection(firestore, 'users', user.uid, 'jobApplications');
+
+        for (const app of seedApplications) {
+          const appData = {
+            ...app,
+            lastUpdated: serverTimestamp(),
+            userId: user.uid,
+          };
+          addDocumentNonBlocking(jobAppsCollection, appData);
+        }
+        toast({
+          title: 'Data Seeding Successful',
+          description: `${seedApplications.length} sample applications have been added to your account.`,
+        });
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Data Seeding Failed',
+          description: 'An error occurred while trying to add the sample data.',
+        });
+      }
   };
 
   const handleExport = () => {
@@ -171,6 +206,11 @@ export default function Header({ applications }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user?.displayName ?? user?.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSeedData}>
+                    <Database className="mr-2 h-4 w-4" />
+                    <span>Seed Data</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
