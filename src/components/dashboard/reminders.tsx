@@ -115,7 +115,7 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
               <Plus className="h-5 w-5" />
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Add Reminder</DialogTitle>
               <DialogDescription>Set a reminder for an interview or follow-up.</DialogDescription>
@@ -171,7 +171,7 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
                             <Button
                               variant="outline"
                               className={cn(
-                                'pl-3 text-left font-normal',
+                                'w-full pl-3 text-left font-normal',
                                 !field.value && 'text-muted-foreground'
                               )}
                             >
@@ -189,7 +189,7 @@ export default function Reminders({ reminders, applications }: RemindersProps) {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit">Save</Button>
+                  <Button type="submit" className="w-full sm:w-auto">Save</Button>
                 </DialogFooter>
               </form>
             </Form>

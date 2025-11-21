@@ -60,7 +60,7 @@ export default function AiInsights({ applications }: AiInsightsProps) {
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="font-headline">AI Insights</CardTitle>
         <CardDescription>Analyze your strategy and get recommendations.</CardDescription>

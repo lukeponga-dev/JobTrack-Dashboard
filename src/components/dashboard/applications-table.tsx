@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { JobApplication, JobStatus } from '@/lib/types';
 import { MoreHorizontal } from 'lucide-react';
@@ -20,6 +20,7 @@ import {
     DropdownMenuTrigger,
   } from '@/components/ui/dropdown-menu';
 import { Button } from '../ui/button';
+import { useMobile } from '@/hooks/use-mobile';
 
 type ApplicationsTableProps = {
   applications: JobApplication[];
@@ -41,11 +42,9 @@ const statusColors: Record<JobStatus, string> = {
 const toDate = (date: any): Date | null => {
     if (!date) return null;
     if (date instanceof Date) return date;
-    // Handle Firestore Timestamp
     if (typeof date === 'object' && date !== null && typeof date.toDate === 'function') {
       return date.toDate();
     }
-    // Handle string or number
     const d = new Date(date);
     if (!isNaN(d.getTime())) {
       return d;
@@ -53,28 +52,26 @@ const toDate = (date: any): Date | null => {
     return null;
   };
 
-export default function ApplicationsTable({ applications, onEdit }: ApplicationsTableProps) {
-  if (applications.length === 0) {
-    return (
-      <Card>
+  const EmptyState = () => (
+    <Card>
         <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
             <h3 className="text-lg font-semibold">No Applications Found</h3>
             <p className="text-sm text-muted-foreground">Start by adding your first job application.</p>
         </CardContent>
-      </Card>
-    );
-  }
+    </Card>
+);
 
-  return (
+
+const DesktopView = ({ applications, onEdit }: ApplicationsTableProps) => (
     <Card>
-      <CardContent className='p-0'>
+        <CardContent className='p-0'>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Company</TableHead>
-              <TableHead className="hidden sm:table-cell">Role</TableHead>
-              <TableHead className="hidden sm:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Last Updated</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Last Updated</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -86,30 +83,29 @@ export default function ApplicationsTable({ applications, onEdit }: Applications
                 return (
                     <TableRow key={app.id} className="cursor-pointer" onClick={() => onEdit(app)}>
                         <TableCell>
-                        <div className="font-medium">{app.company}</div>
-                        <div className="text-sm text-muted-foreground md:hidden">{app.role}</div>
+                            <div className="font-medium">{app.company}</div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">{app.role}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                        <Badge className={`border-none ${statusColors[app.status]}`} variant="outline">
-                            {app.status}
-                        </Badge>
+                        <TableCell>{app.role}</TableCell>
+                        <TableCell>
+                            <Badge className={`border-none ${statusColors[app.status]}`} variant="outline">
+                                {app.status}
+                            </Badge>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>
                             {lastUpdatedDate ? formatDistanceToNow(lastUpdatedDate, { addSuffix: true }) : 'N/A'}
                         </TableCell>
                         <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuItem onSelect={() => onEdit(app)}>Edit</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onSelect={() => onEdit(app)}>Edit</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                 );
@@ -118,5 +114,52 @@ export default function ApplicationsTable({ applications, onEdit }: Applications
         </Table>
       </CardContent>
     </Card>
-  );
+);
+
+const MobileView = ({ applications, onEdit }: ApplicationsTableProps) => (
+    <div className="grid gap-4">
+        {applications.map((app) => {
+            const lastUpdatedDate = toDate(app.lastUpdated);
+            return (
+                <Card key={app.id} onClick={() => onEdit(app)} className="cursor-pointer">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg font-bold">{app.company}</CardTitle>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onSelect={() => onEdit(app)}>Edit</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <CardDescription>{app.role}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex justify-between items-center">
+                        <Badge className={`border-none ${statusColors[app.status]}`} variant="outline">
+                            {app.status}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground">
+                            {lastUpdatedDate ? formatDistanceToNow(lastUpdatedDate, { addSuffix: true }) : 'N/A'}
+                        </p>
+                    </CardContent>
+                </Card>
+            );
+        })}
+    </div>
+);
+
+export default function ApplicationsTable({ applications, onEdit }: ApplicationsTableProps) {
+  const isMobile = useMobile();
+
+  if (applications.length === 0) {
+    return <EmptyState />;
+  }
+
+  return isMobile 
+    ? <MobileView applications={applications} onEdit={onEdit} /> 
+    : <DesktopView applications={applications} onEdit={onEdit} />;
 }

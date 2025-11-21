@@ -68,9 +68,13 @@ export default function StatusChart({ applications }: StatusChartProps) {
                 tickMargin={10}
                 axisLine={false}
                 tickFormatter={(value) => value.slice(0, 3)}
+                style={{ fontSize: '12px' }}
               />
-              <YAxis />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+              <YAxis style={{ fontSize: '12px' }} />
+              <ChartTooltip 
+                cursor={false} 
+                content={<ChartTooltipContent indicator="dot" style={{ fontSize: '12px' }} />} 
+              />
               <Bar dataKey="count" radius={4} />
             </BarChart>
           </ResponsiveContainer>
