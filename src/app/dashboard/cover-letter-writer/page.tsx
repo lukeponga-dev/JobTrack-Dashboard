@@ -60,7 +60,7 @@ const CoverLetterWriterPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Job &amp; You</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Job &amp; You</CardTitle>
             <CardDescription>Fill out the details to generate a custom cover letter.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -117,7 +117,7 @@ const CoverLetterWriterPage = () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Generated Cover Letter</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Generated Cover Letter</CardTitle>
             <CardDescription>Your AI-generated cover letter will appear here.</CardDescription>
           </CardHeader>
           <CardContent>

@@ -70,7 +70,7 @@ const CvWriterPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Your Details</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Your Details</CardTitle>
             <CardDescription>Fill out the form below to generate your CV.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,7 +184,7 @@ const CvWriterPage = () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Generated CV</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Generated CV</CardTitle>
             <CardDescription>Your AI-generated CV will appear here.</CardDescription>
           </CardHeader>
           <CardContent>

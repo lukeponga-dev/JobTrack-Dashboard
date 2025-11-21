@@ -59,7 +59,7 @@ const ResumeTailorPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Resume & Job Details</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Resume &amp; Job Details</CardTitle>
             <CardDescription>Paste your resume and the job description below.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -89,7 +89,7 @@ const ResumeTailorPage = () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className='font-headline'>Tailored Resume</CardTitle>
+            <CardTitle className='font-headline text-2xl'>Tailored Resume</CardTitle>
             <CardDescription>Your AI-tailored resume will appear here.</CardDescription>
           </CardHeader>
           <CardContent>
