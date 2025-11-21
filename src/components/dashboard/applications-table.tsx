@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Table,
@@ -9,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { JobApplication, JobStatus } from '@/lib/types';
 import { MoreHorizontal } from 'lucide-react';
@@ -21,10 +22,13 @@ import {
   } from '@/components/ui/dropdown-menu';
 import { Button } from '../ui/button';
 import { useMobile } from '@/hooks/use-mobile';
+import { Checkbox } from '../ui/checkbox';
 
 type ApplicationsTableProps = {
   applications: JobApplication[];
   onEdit: (application: JobApplication) => void;
+  selectedIds: string[];
+  setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const statusColors: Record<JobStatus, string> = {
@@ -62,12 +66,25 @@ const toDate = (date: any): Date | null => {
 );
 
 
-const DesktopView = ({ applications, onEdit }: ApplicationsTableProps) => (
+const DesktopView = ({ applications, onEdit, selectedIds, setSelectedIds }: ApplicationsTableProps) => (
     <Card>
         <CardContent className='p-0'>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={selectedIds.length === applications.length && applications.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedIds(applications.map(app => app.id));
+                    } else {
+                      setSelectedIds([]);
+                    }
+                  }}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
@@ -81,17 +98,31 @@ const DesktopView = ({ applications, onEdit }: ApplicationsTableProps) => (
             {applications.map((app) => {
                 const lastUpdatedDate = toDate(app.lastUpdated);
                 return (
-                    <TableRow key={app.id} className="cursor-pointer" onClick={() => onEdit(app)}>
+                    <TableRow key={app.id} data-state={selectedIds.includes(app.id) && "selected"}>
                         <TableCell className="py-2">
+                           <Checkbox
+                            checked={selectedIds.includes(app.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedIds(
+                                checked
+                                  ? [...selectedIds, app.id]
+                                  : selectedIds.filter((id) => id !== app.id)
+                              );
+                            }}
+                            aria-label="Select row"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
+                        <TableCell className="py-2 cursor-pointer" onClick={() => onEdit(app)}>
                             <div className="font-medium">{app.company}</div>
                         </TableCell>
-                        <TableCell className="py-2">{app.role}</TableCell>
-                        <TableCell className="py-2">
+                        <TableCell className="py-2 cursor-pointer" onClick={() => onEdit(app)}>{app.role}</TableCell>
+                        <TableCell className="py-2 cursor-pointer" onClick={() => onEdit(app)}>
                             <Badge className={`border-none ${statusColors[app.status]}`} variant="outline">
                                 {app.status}
                             </Badge>
                         </TableCell>
-                        <TableCell className="py-2">
+                        <TableCell className="py-2 cursor-pointer" onClick={() => onEdit(app)}>
                             {lastUpdatedDate ? formatDistanceToNow(lastUpdatedDate, { addSuffix: true }) : 'N/A'}
                         </TableCell>
                         <TableCell className="py-2">
@@ -116,13 +147,27 @@ const DesktopView = ({ applications, onEdit }: ApplicationsTableProps) => (
     </Card>
 );
 
-const MobileView = ({ applications, onEdit }: ApplicationsTableProps) => (
+const MobileView = ({ applications, onEdit, selectedIds, setSelectedIds }: ApplicationsTableProps) => (
     <div className="grid gap-4">
       {applications.map((app) => {
         const lastUpdatedDate = toDate(app.lastUpdated);
         return (
-          <Card key={app.id} onClick={() => onEdit(app)} className="cursor-pointer">
+          <Card key={app.id} onClick={() => onEdit(app)} className="cursor-pointer data-[state=selected]:ring-2 data-[state=selected]:ring-primary" data-state={selectedIds.includes(app.id) ? "selected" : "unselected"}>
             <CardContent className="p-4 flex items-start gap-4">
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={selectedIds.includes(app.id)}
+                  onCheckedChange={(checked) => {
+                    setSelectedIds(
+                      checked
+                        ? [...selectedIds, app.id]
+                        : selectedIds.filter((id) => id !== app.id)
+                    );
+                  }}
+                  aria-label="Select row"
+                  className="mt-1"
+                />
+              </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
                     <p className="font-semibold text-foreground truncate">{app.company}</p>
@@ -153,14 +198,20 @@ const MobileView = ({ applications, onEdit }: ApplicationsTableProps) => (
     </div>
   );
 
-export default function ApplicationsTable({ applications, onEdit }: ApplicationsTableProps) {
+export default function ApplicationsTable(props: ApplicationsTableProps) {
   const isMobile = useMobile();
 
-  if (applications.length === 0) {
+  if (props.applications.length === 0) {
     return <EmptyState />;
   }
 
+  // Deselect applications that are no longer in the filtered list
+  React.useEffect(() => {
+    const currentIds = new Set(props.applications.map(app => app.id));
+    props.setSelectedIds(ids => ids.filter(id => currentIds.has(id)));
+  }, [props.applications, props.setSelectedIds]);
+
   return isMobile 
-    ? <MobileView applications={applications} onEdit={onEdit} /> 
-    : <DesktopView applications={applications} onEdit={onEdit} />;
+    ? <MobileView {...props} /> 
+    : <DesktopView {...props} />;
 }
