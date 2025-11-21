@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import AuthGuard from '@/components/auth-guard';
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, useSidebar } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Briefcase, FileText, ScanText, StickyNote, Home, ExternalLink } from 'lucide-react';
 import Header from '@/components/dashboard/header';
 import { useUser } from '@/firebase';
+import { cn } from '@/lib/utils';
 
 function DashboardSidebar() {
     const { user } = useUser();
@@ -71,6 +72,21 @@ function DashboardSidebar() {
     )
 }
 
+function DashboardMain({ children }: { children: React.ReactNode }) {
+    const { isCollapsed } = useSidebar();
+    return (
+        <div 
+            data-collapsed={isCollapsed}
+            className={cn(
+                "flex flex-col sm:gap-4 sm:py-4 transition-all duration-300",
+                "sm:pl-[--sidebar-width-collapsed] data-[collapsed=false]:sm:pl-[--sidebar-width]"
+            )}
+        >
+            {children}
+        </div>
+    )
+}
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -78,9 +94,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarProvider>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <DashboardSidebar />
-                <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                <DashboardMain>
                     {children}
-                </div>
+                </DashboardMain>
             </div>
         </SidebarProvider>
     </AuthGuard>
