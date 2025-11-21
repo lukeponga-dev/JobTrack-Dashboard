@@ -201,15 +201,15 @@ const MobileView = ({ applications, onEdit, selectedIds, setSelectedIds }: Appli
 export default function ApplicationsTable(props: ApplicationsTableProps) {
   const isMobile = useMobile();
 
-  if (props.applications.length === 0) {
-    return <EmptyState />;
-  }
-
   // Deselect applications that are no longer in the filtered list
   React.useEffect(() => {
     const currentIds = new Set(props.applications.map(app => app.id));
     props.setSelectedIds(ids => ids.filter(id => currentIds.has(id)));
   }, [props.applications, props.setSelectedIds]);
+  
+  if (props.applications.length === 0) {
+    return <EmptyState />;
+  }
 
   return isMobile 
     ? <MobileView {...props} /> 
