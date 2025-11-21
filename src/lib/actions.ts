@@ -19,7 +19,10 @@ export async function getAiInsights(applications: JobApplication[]) {
   }));
 
   try {
-    const analysis = await analyzeApplicationData(analysisInput);
+    // Pass the stringified data to the flow
+    const analysis = await analyzeApplicationData({
+      jobData: JSON.stringify(analysisInput),
+    });
     return { data: analysis };
   } catch (e) {
     console.error(e);

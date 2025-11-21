@@ -15,25 +15,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 // Define the input schema for the job application data.
-const AnalyzeApplicationDataInputSchema = z.array(
-  z.object({
-    company: z.string().describe('The name of the company applied to.'),
-    role: z.string().describe('The role applied for.'),
-    status: z
-      .enum([
-        'Applied',
-        'Interviewing',
-        'Offer',
-        'Rejected',
-        'Viewed',
-        'Not selected',
-        'Expired',
-        'Unlikely to progress',
-      ])
-      .describe('The current status of the application.'),
-    dateApplied: z.string().describe('The date the application was submitted.'),
-  })
-);
+const AnalyzeApplicationDataInputSchema = z.object({
+  jobData: z
+    .string()
+    .describe('A JSON string representing an array of job applications.'),
+});
 export type AnalyzeApplicationDataInput = z.infer<
   typeof AnalyzeApplicationDataInputSchema
 >;
@@ -78,7 +64,7 @@ const analyzeApplicationDataPrompt = ai.definePrompt({
   output: {schema: AnalyzeApplicationDataOutputSchema},
   prompt: `You are an AI job search strategist. Analyze the following job application data to identify trends and provide insights.
 
-Job Application Data: {{{JSON.stringify .}}}
+Job Application Data: {{{jobData}}}
 
 Provide the following analysis:
 
