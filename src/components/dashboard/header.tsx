@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileDown, FileUp, LogOut, PanelLeft, FileText } from 'lucide-react';
+import { FileDown, FileUp, LogOut, PanelLeft, FileText, StickyNote } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
@@ -125,9 +125,9 @@ export default function Header({ applications }: HeaderProps) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
-                <SheetHeader>
-                    <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                    <SheetDescription className="sr-only">Main navigation and actions for the dashboard.</SheetDescription>
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Mobile Menu</SheetTitle>
+                    <SheetDescription>Main navigation and actions for the dashboard.</SheetDescription>
                 </SheetHeader>
                 <nav className="grid gap-6 text-lg font-medium mt-8">
                     <Link
@@ -150,6 +150,10 @@ export default function Header({ applications }: HeaderProps) {
                         <FileText className="h-5 w-5" />
                         CV Writer
                     </button>
+                    <button className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground text-left" onClick={() => handleMobileNavClick('/dashboard/cover-letter-writer')}>
+                        <StickyNote className="h-5 w-5" />
+                        Cover Letter Writer
+                    </button>
                 </nav>
             </SheetContent>
         </Sheet>
@@ -170,7 +174,11 @@ export default function Header({ applications }: HeaderProps) {
             />
             {!isMobile && (
                 <>
-                    <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => router.push('/dashboard/cv-writer')}>
+                    <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => router.push('/dashboard/cover-letter-writer')}>
+                        <StickyNote className="h-3.5 w-3.5" />
+                        Cover Letter
+                    </Button>
+                     <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => router.push('/dashboard/cv-writer')}>
                         <FileText className="h-3.5 w-3.5" />
                         CV Writer
                     </Button>

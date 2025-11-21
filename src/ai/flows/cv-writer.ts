@@ -1,13 +1,5 @@
 'use server';
 
-/**
- * @fileOverview A flow for generating a professional CV using AI.
- *
- * - generateCv - A function that takes user details and returns a formatted CV.
- * - CvWriterInput - The input type for the generateCv function.
- * - CvWriterOutput - The output type for the generateCv function.
- */
-
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
@@ -41,15 +33,18 @@ const CvWriterOutputSchema = z.object({
 });
 export type CvWriterOutput = z.infer<typeof CvWriterOutputSchema>;
 
-export async function generateCv(input: CvWriterInput): Promise<CvWriterOutput> {
-  return cvWriterFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'cvWriterPrompt',
-  input: { schema: CvWriterInputSchema },
-  output: { schema: CvWriterOutputSchema },
-  prompt: `You are a professional resume writer. Create a clean, well-formatted CV in Markdown based on the following information. Ensure the output is professional and easy to read.
+const cvWriterFlow = ai.defineFlow(
+  {
+    name: 'cvWriterFlow',
+    inputSchema: CvWriterInputSchema,
+    outputSchema: CvWriterOutputSchema,
+  },
+  async input => {
+    const prompt = ai.definePrompt({
+      name: 'cvWriterPrompt',
+      input: { schema: CvWriterInputSchema },
+      output: { schema: CvWriterOutputSchema },
+      prompt: `You are a professional resume writer. Create a clean, well-formatted CV in Markdown based on the following information. Ensure the output is professional and easy to read.
 
 ## Personal Information
 - **Full Name:** {{{fullName}}}
@@ -74,16 +69,13 @@ const prompt = ai.definePrompt({
 ## Skills
 - {{{skills}}}
 `,
-});
+    });
 
-const cvWriterFlow = ai.defineFlow(
-  {
-    name: 'cvWriterFlow',
-    inputSchema: CvWriterInputSchema,
-    outputSchema: CvWriterOutputSchema,
-  },
-  async input => {
     const { output } = await prompt(input);
     return output!;
   }
 );
+
+export async function generateCv(input: CvWriterInput): Promise<CvWriterOutput> {
+  return cvWriterFlow(input);
+}
