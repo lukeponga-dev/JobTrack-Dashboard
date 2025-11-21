@@ -10,12 +10,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const ExtractApplicationInputSchema = z.object({
+const ExtractApplicationInputSchema = z.object({
   emailContent: z.string().min(1, 'Email content is required.'),
 });
 export type ExtractApplicationInput = z.infer<typeof ExtractApplicationInputSchema>;
 
-export const ExtractApplicationOutputSchema = z.object({
+const ExtractApplicationOutputSchema = z.object({
   company: z.string().describe('The name of the company.'),
   role: z.string().describe('The job title or role.'),
   location: z.string().optional().describe('The location of the job.'),
